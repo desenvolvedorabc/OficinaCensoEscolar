@@ -1,2 +1,36 @@
 data/*.csv
 data/microdados_ed_basica_2024.csv
+
+# Bancos de dados
+*.duckdb
+db/
+*.db
+*.sqlite
+
+# Arquivos temporários
+*.tmp
+*.temp
+
+# Logs
+log/
+*.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.venv/
+venv/
+env/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
