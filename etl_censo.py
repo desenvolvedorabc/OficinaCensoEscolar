@@ -23,21 +23,30 @@ def setup_logging():
     )
 
 def ler_dicionario_em_dataframe(dict_path):
-    df = pd.read_excel(dict_path, sheet_name='microdados_unidade_coleta', engine='openpyxl')
-    df = df.rename(columns=lambda x: x.strip())
+    df = pd.read_excel(dict_path, sheet_name=0, engine='openpyxl')  # Usar primeira aba
+    df = df.rename(columns=lambda x: x.strip() if isinstance(x, str) else x)
+    
+    # As colunas reais são: 'Unnamed: 1' (nome da variável), 'Tipo de Dado', etc.
+    # Renomear para facilitar o uso
+    if 'Unnamed: 1' in df.columns:
+        df = df.rename(columns={'Unnamed: 1': 'Nome da Variável'})
     
     # Limpar e filtrar dados inválidos
-    df['Nome da Variável'] = df['Nome da Variável'].astype(str).str.strip()
-    df['Tipo de Dado'] = df['Tipo de Dado'].astype(str).str.strip()
-    df['Tamanho'] = df['Tamanho'].apply(lambda x: str(x).strip() if pd.notnull(x) else '')
+    if 'Nome da Variável' in df.columns:
+        df['Nome da Variável'] = df['Nome da Variável'].astype(str).str.strip()
+        df['Tipo de Dado'] = df['Tipo de Dado'].astype(str).str.strip()
+        df['Tamanho'] = df['Tamanho'].apply(lambda x: str(x).strip() if pd.notnull(x) else '')
+        
+        # Remover linhas com nomes de variáveis inválidos
+        df = df[df['Nome da Variável'].notna()]  # Remove NaN
+        df = df[df['Nome da Variável'] != 'nan']  # Remove string 'nan'
+        df = df[df['Nome da Variável'] != '']     # Remove vazias
+        df = df[df['Nome da Variável'].str.len() > 0]  # Remove strings vazias
+        
+        print(f"Dicionário carregado: {len(df)} variáveis válidas")
+    else:
+        print("Aviso: Coluna 'Nome da Variável' não encontrada no dicionário")
     
-    # Remover linhas com nomes de variáveis inválidos
-    df = df[df['Nome da Variável'].notna()]  # Remove NaN
-    df = df[df['Nome da Variável'] != 'nan']  # Remove string 'nan'
-    df = df[df['Nome da Variável'] != '']     # Remove vazias
-    df = df[df['Nome da Variável'].str.len() > 0]  # Remove strings vazias
-    
-    print(f"Dicionário carregado: {len(df)} variáveis válidas")
     return df
 
 def inferir_tipo_duckdb(tipo, tamanho):
